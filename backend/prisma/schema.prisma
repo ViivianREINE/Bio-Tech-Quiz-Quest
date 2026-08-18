@@ -322,6 +322,7 @@ model XPTransaction {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, actionType, referenceId], map: "XPTransaction_idempotency_key")
   @@index([userId])
 }
 

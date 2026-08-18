@@ -11,6 +11,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:push": "prisma db push",
     "prisma:seed": "tsx prisma/seed.ts",
+    "seed": "tsx prisma/seed.ts",
+    "seed:verify": "tsx prisma/verify-seed.ts",
+    "e2e:smoke": "tsx scripts/e2e-smoke.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -38,5 +41,8 @@
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vitest": "^3.0.6"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

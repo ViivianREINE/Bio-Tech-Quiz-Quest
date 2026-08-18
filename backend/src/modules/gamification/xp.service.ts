@@ -23,11 +23,23 @@ export class XPService {
       }
     }
 
-    const transaction = await prisma.xPTransaction.create({
-      data: { userId, actionType, amount, description, referenceId },
-    });
-
-    return transaction;
+    try {
+      const transaction = await prisma.xPTransaction.create({
+        data: { userId, actionType, amount, description, referenceId },
+      });
+      return transaction;
+    } catch (error) {
+      if (
+        referenceId &&
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code?: string }).code === 'P2002'
+      ) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async awardCorrectAnswerXP(userId: string, attemptId: string, correctCount: number) {

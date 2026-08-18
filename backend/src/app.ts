@@ -19,6 +19,7 @@ import { gamificationRouter } from './modules/gamification/gamification.routes.j
 import { leaderboardRouter } from './modules/leaderboard/leaderboard.routes.js';
 import { badgeService } from './modules/gamification/badge.service.js';
 import { GAMIFICATION_CONFIG } from './config/gamification.js';
+import { adminRouter } from './modules/admin/analytics/analytics.routes.js';
 
 export const createApp = (): Express => {
   const app = express();
@@ -54,6 +55,7 @@ export const createApp = (): Express => {
   app.use('/api/questions', questionRouter);
   app.use('/api/attempts', attemptRouter);
   app.use('/api/progress', progressRouter);
+  app.use('/api/admin', adminRouter);
   app.use('/api/gamification', gamificationRouter);
   app.use('/api/leaderboard', leaderboardRouter);
 
