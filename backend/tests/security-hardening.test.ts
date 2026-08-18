@@ -201,8 +201,9 @@ describe('Checkpoint 9 — Backend Security Hardening', () => {
       });
 
     expect(submit.status).toBe(200);
-    expect(submit.body.data.obtainedMarks).toBeLessThan(999);
-    expect(submit.body.data.percentage).toBeLessThanOrEqual(100);
+    const result = submit.body.data.result ?? submit.body.data;
+    expect(result.obtainedMarks).toBeLessThan(999);
+    expect(result.percentage).toBeLessThanOrEqual(100);
   });
 
   it('prevents student XP self-award via admin endpoint', async () => {

@@ -18,6 +18,7 @@ describe('Checkpoint 5 — Attempt & Scoring Engine Tests', () => {
   let student2Id: string;
 
   let quizId: string;
+  let topicId: string;
   let questionsList: Array<{
     id: string;
     correctOptionId: string;
@@ -115,6 +116,7 @@ describe('Checkpoint 5 — Attempt & Scoring Engine Tests', () => {
         status: ContentStatus.PUBLISHED,
       },
     });
+    topicId = topic.id;
 
     const quiz = await prisma.quiz.create({
       data: {
@@ -235,7 +237,7 @@ describe('Checkpoint 5 — Attempt & Scoring Engine Tests', () => {
     it('Student cannot start an unpublished/draft quiz', async () => {
       const draftQuiz = await prisma.quiz.create({
         data: {
-          topicId: (await prisma.topic.findFirst())!.id,
+          topicId,
           title: 'Secret Draft Quiz',
           duration: 5,
           status: ContentStatus.DRAFT,

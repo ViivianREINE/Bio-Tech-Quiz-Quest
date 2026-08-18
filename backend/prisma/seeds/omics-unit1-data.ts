@@ -26,8 +26,8 @@ export const OMICS_UNIT1_TOPICS: SeedTopic[] = [
         body: `## Forward Genetics Tools
 
 **Key points**
-- Chemical mutagens and radiation mutagenesis (X-rays, UV rays, and γ-radiations) can cause DNA breaks or dimer formation.
-- X-rays and γ-rays cause breaks in double-stranded DNA, resulting in large deletions or chromosomal rearrangements.
+- Chemical mutagens and radiation mutagenesis (X-rays, UV rays, and gamma-radiations) can cause DNA breaks or dimer formation.
+- X-rays and gamma-rays cause breaks in double-stranded DNA, resulting in large deletions or chromosomal rearrangements.
 - Transposon insertional mutagenesis mobilizes transposable elements containing marker gene(s) in the genome; TE insertion can disrupt coding regions or affect intron splicing or gene expression.
 - Map-based cloning and massively parallel sequencing are listed among forward genetics approaches in the source material.
 
@@ -74,7 +74,7 @@ Reverse genetics starts from a known gene and investigates its function.`,
 | B | PISTILLATA, APETALA3 | With class C genes mediates stamen development |
 | C | AGAMOUS | Determines carpel formation |
 | D | SEEDSTICK, SHATTERPROOF | Specify ovule identity |
-| E | SEPALLATA (SEP1–SEP4) | Expressed in entire floral meristem and necessary |
+| E | SEPALLATA (SEP1-SEP4) | Expressed in entire floral meristem and necessary |
 
 The model was developed from *Arabidopsis thaliana* and Snapdragon mutants; most ABCDE genes are MADS-box genes.`,
       },
@@ -141,14 +141,14 @@ Researchers isolated single-gene mutants with homeotic transformations to unders
             options: tf(true),
           },
           {
-            questionText: 'X-rays and γ-rays can cause breaks in double-stranded DNA according to the forward genetics section.',
+            questionText: 'X-rays and gamma-rays can cause breaks in double-stranded DNA according to the forward genetics section.',
             questionType: QuestionType.TRUE_FALSE,
             difficulty: Difficulty.EASY,
             marks: 1,
             displayOrder: 3,
             metadata: { sourceFile: 'Unit-1_ii.pdf', sourceSection: 'Radiation Mutagenesis' },
             explanation:
-              'The source states that X-rays and γ-rays cause breaks in double-stranded DNA, resulting in large deletions or chromosomal rearrangements.',
+              'The source states that X-rays and gamma-rays cause breaks in double-stranded DNA, resulting in large deletions or chromosomal rearrangements.',
             options: tf(true),
           },
           {
@@ -252,7 +252,7 @@ Single-cell sequencing sequences one cell at a time to study genome, transcripto
         },
         body: `Reference flow (from Unit-1_i.pdf):
 
-1. **Isolation of single cells** → FACS, MACS, LCM, micromanipulation, microfluidics
+1. **Isolation of single cells** -> FACS, MACS, LCM, micromanipulation, microfluidics
 2. **Extraction and amplification of genetic material**
 3. **Library preparation** with cellular barcodes and adapters
 4. **Sequencing** (commonly Illumina sequencing-by-synthesis; proton-based and other NGS platforms also mentioned)

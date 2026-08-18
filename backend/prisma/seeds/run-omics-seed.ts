@@ -54,6 +54,15 @@ export async function seedOmicsUnit1(client: PrismaClient = prisma) {
     }
   }
 
+  // Ensure clean state: remove any extraneous quizzes under OMICS unit (e.g. from test leaks)
+  const validQuizTitles = OMICS_UNIT1_TOPICS.flatMap((t) => t.quizzes.map((q) => q.title));
+  await client.quiz.deleteMany({
+    where: {
+      topic: { unitId: unit.id },
+      title: { notIn: validQuizTitles },
+    },
+  });
+
   const passwordHash = await hashPassword(adminPassword);
   await upsertAdminUser(client, adminEmail, passwordHash, adminName);
 
