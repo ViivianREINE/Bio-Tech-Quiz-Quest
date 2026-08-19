@@ -9,7 +9,7 @@
 [![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-3178c6?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL%20%2B%20Prisma-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.prisma.io/)
 [![Tests](https://img.shields.io/badge/Tests-127%20Passing-4caf50?style=for-the-badge&logo=vitest&logoColor=white)](#testing)
-[![License](https://img.shields.io/badge/License-MIT-ffb300?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-ffb300?style=for-the-badge)](LICENSE)
 
 <br/>
 
@@ -280,8 +280,8 @@ All protected routes require: `Authorization: Bearer <token>`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| `POST` | `/auth/register` | ❌ | Register new student |
-| `POST` | `/auth/login` | ❌ | Login and receive JWT |
+| `POST` | `/auth/register` | ✅ | Register new student |
+| `POST` | `/auth/login` | ✅ | Login and receive JWT |
 | `GET` | `/auth/me` | ✅ | Get current user profile |
 | `POST` | `/auth/logout` | ✅ | Invalidate session |
 | `GET` | `/subjects` | ✅ | List all subjects |
