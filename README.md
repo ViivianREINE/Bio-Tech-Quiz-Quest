@@ -53,7 +53,7 @@ This is not a mock quiz app — every score, badge, leaderboard rank, and XP poi
 | Environment | URL |
 |-------------|-----|
 | 🌐 **Production (Frontend)** | [https://biotech-quiz-quest.vercel.app/](https://biotech-quiz-quest.vercel.app/) |
-| 🔌 **Backend API** | `http://localhost:5000/api` (self-hosted) |
+| 🔌 **Backend API** | `https://bio-tech-quiz-quest.onrender.com/api` (self-hosted) |
 
 ### Quick Login
 > Use the registration form to create your own student account, or use:

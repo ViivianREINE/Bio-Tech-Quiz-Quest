@@ -25,7 +25,8 @@ export type GameScreen =
   | 'ACHIEVEMENTS'
   | 'LEADERBOARD'
   | 'WORLD_MAP'
-  | 'SETTINGS';
+  | 'SETTINGS'
+  | 'ADMIN';
 
 interface GameContextType {
   screen: GameScreen;
@@ -103,7 +104,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         progressApi.getMyProgress().catch(() => null),
       ]);
       if (xpRes) setXpData(xpRes);
-      if (badgesRes) setBadges(badgesRes);
+      if (Array.isArray(badgesRes)) setBadges(badgesRes);
       if (progressRes) setProgress(progressRes);
     } catch (e) {
       console.error('[GameContext] Failed to load gamification data:', e);
@@ -114,14 +115,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) return;
     try {
       const subjList = await academicApi.getSubjects();
-      setSubjects(subjList);
-      if (subjList.length > 0) {
-        const primary = subjList[0];
+      const safeSubjects = Array.isArray(subjList) ? subjList : [];
+      setSubjects(safeSubjects);
+
+      if (safeSubjects.length > 0) {
+        // Look for OMICS or published primary subject
+        const primary = safeSubjects.find((s) => s.status === 'PUBLISHED') || safeSubjects[0];
         setActiveSubject(primary);
+
         const unitList = await academicApi.getUnitsBySubject(primary.id);
-        setUnits(unitList);
-        if (unitList.length > 0) {
-          setActiveUnit(unitList[0]);
+        const safeUnits = Array.isArray(unitList) ? unitList : [];
+        setUnits(safeUnits);
+
+        if (safeUnits.length > 0) {
+          const publishedUnit = safeUnits.find((u) => u.status === 'PUBLISHED') || safeUnits[0];
+          setActiveUnit(publishedUnit);
         }
       }
     } catch (e) {
@@ -132,9 +140,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const loadTopicsForUnit = useCallback(async (unitId: string) => {
     try {
       const topicList = await academicApi.getTopicsByUnit(unitId);
-      setTopics(topicList);
+      const safeTopics = Array.isArray(topicList) ? topicList : [];
+      setTopics(safeTopics);
     } catch (e) {
       console.error('[GameContext] Failed to load topics for unit:', e);
+      setTopics([]);
     }
   }, []);
 
@@ -159,7 +169,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (e.key === 'Escape') {
         if (screen === 'OVERWORLD' || screen === 'LAB') {
           setIsPaused((prev) => !prev);
-        } else if (screen === 'ACHIEVEMENTS' || screen === 'LEADERBOARD' || screen === 'SETTINGS' || screen === 'WORLD_MAP') {
+        } else if (
+          screen === 'ACHIEVEMENTS' ||
+          screen === 'LEADERBOARD' ||
+          screen === 'SETTINGS' ||
+          screen === 'WORLD_MAP' ||
+          screen === 'ADMIN'
+        ) {
           setScreen('OVERWORLD');
           setIsPaused(false);
         }

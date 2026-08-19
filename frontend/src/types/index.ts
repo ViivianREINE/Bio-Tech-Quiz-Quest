@@ -2,6 +2,17 @@ export type Role = 'ADMIN' | 'STUDENT';
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 export type AttemptStatus = 'IN_PROGRESS' | 'COMPLETED' | 'EXPIRED' | 'ABANDONED';
+export type QuestionType = 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'MULTIPLE_SELECT';
+export type ContentType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'DIAGRAM'
+  | 'FLOWCHART'
+  | 'TABLE'
+  | 'CASE_STUDY'
+  | 'VIDEO_REFERENCE'
+  | 'INTERACTIVE_ACTIVITY';
+export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
 
 export interface User {
   id: string;
@@ -21,11 +32,11 @@ export interface AuthResponse {
 export interface Subject {
   id: string;
   name: string;
-  code: string;
+  code?: string;
   description?: string;
   icon?: string;
   status: ContentStatus;
-  displayOrder: number;
+  displayOrder?: number;
   units?: Unit[];
 }
 
@@ -41,33 +52,46 @@ export interface Unit {
   subject?: {
     id: string;
     name: string;
-    code: string;
+    code?: string;
   };
 }
 
 export interface Topic {
   id: string;
   unitId: string;
-  topicNumber: number;
+  topicNumber?: number;
   title: string;
   description?: string;
   status: ContentStatus;
   displayOrder: number;
   contents?: LearningContent[];
   quizzes?: QuizSummary[];
+  unit?: {
+    id: string;
+    title: string;
+    subject?: {
+      id: string;
+      name: string;
+    };
+  };
 }
 
 export interface LearningContent {
   id: string;
   topicId: string;
   title: string;
+  contentType?: ContentType;
   summary?: string;
-  content: string;
+  content?: string;
+  body?: string;
   keyPoints?: string[] | any;
   diagramUrl?: string;
   tableData?: any;
-  orderIndex: number;
+  difficulty?: Difficulty;
+  orderIndex?: number;
+  displayOrder?: number;
   status?: ContentStatus;
+  metadata?: any;
 }
 
 export interface QuizSummary {
@@ -75,12 +99,30 @@ export interface QuizSummary {
   topicId: string;
   title: string;
   description?: string;
+  difficulty?: Difficulty;
   duration: number; // minutes
   passingPercentage: number;
   totalQuestions?: number;
   maximumAttempts: number;
   negativeMarking: boolean;
+  correctMark?: number;
+  incorrectMark?: number;
+  unansweredMark?: number;
+  randomizeQuestions?: boolean;
+  randomizeOptions?: boolean;
   status: ContentStatus;
+  topic?: {
+    id: string;
+    title: string;
+    unit?: {
+      id: string;
+      title: string;
+      subject?: {
+        id: string;
+        name: string;
+      };
+    };
+  };
 }
 
 export interface QuizOption {
@@ -93,9 +135,9 @@ export interface QuizOption {
 export interface QuizQuestion {
   id: string;
   questionText: string;
-  questionType?: string;
+  questionType?: QuestionType;
   marks: number;
-  difficulty?: string;
+  difficulty?: Difficulty;
   displayOrder: number;
   options: QuizOption[];
   explanation?: string;
@@ -200,6 +242,82 @@ export interface ProgressSummary {
     completionPercent: number;
     unitsCount: number;
   }>;
+}
+
+export interface AdminDashboardSummary {
+  users: {
+    total: number;
+    students: number;
+    admins: number;
+    active: number;
+    inactive: number;
+    suspended: number;
+  };
+  academic: {
+    subjects: number;
+    publishedSubjects: number;
+    units: number;
+    topics: number;
+    learningContent: number;
+    quizzes: number;
+    publishedQuizzes: number;
+    questions: number;
+  };
+  attempts: {
+    totalAttempts: number;
+    inProgressAttempts: number;
+    completedAttempts: number;
+    expiredAttempts: number;
+    abandonedAttempts: number;
+  };
+  performance: {
+    averageScore: number;
+    passRate: number;
+    failRate: number;
+  };
+  engagement: {
+    totalXP: number;
+    usersWithAttempts: number;
+    mostAttemptedQuiz?: {
+      quizId: string;
+      quizTitle: string;
+      attempts: number;
+    } | null;
+    mostAttemptedSubject?: {
+      subjectId: string;
+      subjectName: string;
+      attempts: number;
+    } | null;
+  };
+  topPerformers: {
+    highestXP: Array<{ userId: string; name: string; totalXP: number }>;
+    highestAverageScore: Array<{ userId: string; name: string; averageScore: number; completedAttempts: number }>;
+    highestQuizPerformance: Array<{ userId: string; quizId: string; name: string; averageScore: number; attempts: number }>;
+  };
+  popularContent: {
+    mostAttemptedSubjects: Array<{ subjectId: string; subjectName: string; attempts: number }>;
+    mostAttemptedQuizzes: Array<{ quizId: string; quizTitle: string; attempts: number }>;
+    mostActiveTopics: Array<{ topicId: string; topicTitle: string; attempts: number }>;
+  };
+}
+
+export interface AdminAttemptItem {
+  attemptId: string;
+  studentId: string;
+  studentName: string;
+  quizId: string;
+  quizTitle: string;
+  subjectId: string;
+  subjectName: string;
+  status: AttemptStatus;
+  startedAt: string;
+  submittedAt?: string | null;
+  expiresAt: string;
+  percentage: number;
+  obtainedMarks: number;
+  totalMarks: number;
+  isPassed: boolean;
+  timeTakenSec: number;
 }
 
 export interface ApiResponse<T = any> {

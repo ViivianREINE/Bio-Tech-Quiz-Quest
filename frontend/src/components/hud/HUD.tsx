@@ -1,10 +1,12 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { useAudio } from '../../context/AudioContext';
-import { Volume2, VolumeX, Map, Trophy, Award, Menu } from 'lucide-react';
+import { Volume2, VolumeX, Map, Trophy, Award, Menu, GraduationCap } from 'lucide-react';
 import { ProgressBar } from '../ui/ProgressBar';
 
 export const HUD: React.FC = () => {
+  const { user } = useAuth();
   const { xpData, screen, setScreen, setIsPaused, proximityPrompt, companionMessage } = useGame();
   const { isMuted, toggleMute } = useAudio();
 
@@ -65,6 +67,16 @@ export const HUD: React.FC = () => {
 
         {/* TOP-RIGHT: Controls & Shortcuts */}
         <div className="pointer-events-auto flex items-center gap-2">
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={() => setScreen('ADMIN')}
+              className="pixel-box-gold p-2.5 text-amber-950 hover:scale-105 active:scale-95 transition cursor-pointer font-bold"
+              title="Teacher Console (CMS)"
+            >
+              <GraduationCap className="w-5 h-5 fill-current" />
+            </button>
+          )}
+
           <button
             onClick={toggleMute}
             className="pixel-box-wood p-2.5 text-amber-300 hover:text-amber-100 hover:scale-105 active:scale-95 transition cursor-pointer"

@@ -5,26 +5,32 @@ import { leaderboardApi } from '../../api';
 import type { LeaderboardEntry } from '../../types';
 import { PixelPanel } from '../ui/PixelPanel';
 import { PixelButton } from '../ui/PixelButton';
-import { Trophy, Crown, Star, ArrowLeft } from 'lucide-react';
+import { Trophy, Crown, Star, ArrowLeft, RefreshCw } from 'lucide-react';
 
 export const LeaderboardModal: React.FC = () => {
   const { user } = useAuth();
   const { setScreen } = useGame();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      const data = await leaderboardApi.getGlobalLeaderboard();
+      const safeData = Array.isArray(data) ? data : [];
+      setLeaderboard(safeData);
+    } catch (e: any) {
+      console.error('Failed to load leaderboard:', e);
+      setErrorMsg(e.message || 'Unable to retrieve leaderboard rankings.');
+      setLeaderboard([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setLoading(true);
-        const data = await leaderboardApi.getGlobalLeaderboard();
-        setLeaderboard(data);
-      } catch (e) {
-        console.error('Failed to load leaderboard:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchLeaderboard();
   }, []);
 
@@ -61,6 +67,8 @@ export const LeaderboardModal: React.FC = () => {
     );
   };
 
+  const safeList = Array.isArray(leaderboard) ? leaderboard : [];
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
       <div className="w-full max-w-4xl my-auto animate-scale-in">
@@ -74,31 +82,47 @@ export const LeaderboardModal: React.FC = () => {
                   GLOBAL RESEARCH LEADERBOARD & HALL OF FAME
                 </span>
               </div>
-              <PixelButton
-                variant="wood"
-                size="sm"
-                onClick={() => setScreen('OVERWORLD')}
-                icon={<ArrowLeft className="w-3.5 h-3.5" />}
-              >
-                RETURN TO CAMPUS
-              </PixelButton>
+              <div className="flex items-center gap-2">
+                <PixelButton
+                  variant="wood"
+                  size="sm"
+                  onClick={fetchLeaderboard}
+                  icon={<RefreshCw className="w-3.5 h-3.5" />}
+                >
+                  REFRESH
+                </PixelButton>
+                <PixelButton
+                  variant="wood"
+                  size="sm"
+                  onClick={() => setScreen('OVERWORLD')}
+                  icon={<ArrowLeft className="w-3.5 h-3.5" />}
+                >
+                  RETURN TO CAMPUS
+                </PixelButton>
+              </div>
             </div>
           }
         >
           <div className="flex flex-col gap-4">
+            {errorMsg && (
+              <div className="p-3 bg-red-950/80 border border-red-500 text-red-200 text-xs font-sans rounded">
+                ⚠️ {errorMsg}
+              </div>
+            )}
+
             {loading ? (
               <div className="py-16 text-center font-pixel text-xs text-amber-300">
                 QUERYING GLOBAL ACADEMIC RANKINGS...
               </div>
-            ) : leaderboard.length === 0 ? (
+            ) : safeList.length === 0 ? (
               <div className="py-12 text-center font-pixel text-xs text-amber-100/50">
-                NO RESEARCH CANDIDATES REGISTERED ON LEADERBOARD.
+                No researchers have earned XP yet. Complete topic quizzes to appear on the leaderboard!
               </div>
             ) : (
               <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
-                {leaderboard.map((entry, index) => {
+                {safeList.map((entry, index) => {
                   const rank = entry.rank || index + 1;
-                  const isCurrent = user?.id === entry.userId || user?.email === entry.email;
+                  const isCurrent = user?.id === entry.userId || (user?.email && user.email === entry.email);
 
                   return (
                     <div
@@ -120,7 +144,7 @@ export const LeaderboardModal: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-pixel text-xs md:text-sm text-white font-bold">
-                              {entry.name}
+                              {entry.name || 'Unknown Researcher'}
                             </h4>
                             {isCurrent && (
                               <span className="px-1.5 py-0.5 bg-cyan-800 text-cyan-200 font-pixel text-[8px] rounded">
@@ -128,9 +152,11 @@ export const LeaderboardModal: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <p className="font-clean text-xs text-amber-100/70">
-                            {entry.email}
-                          </p>
+                          {entry.email && (
+                            <p className="font-clean text-xs text-amber-100/70">
+                              {entry.email}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -140,13 +166,6 @@ export const LeaderboardModal: React.FC = () => {
                           <span className="font-pixel text-[9px] text-amber-400">LEVEL</span>
                           <div className="font-pixel text-xs text-white">
                             LVL {entry.level || 1}
-                          </div>
-                        </div>
-
-                        <div className="text-center hidden md:block">
-                          <span className="font-pixel text-[9px] text-cyan-400">PASSED</span>
-                          <div className="font-pixel text-xs text-cyan-200">
-                            {entry.quizzesPassed || 0}
                           </div>
                         </div>
 

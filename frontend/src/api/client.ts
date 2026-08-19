@@ -1,6 +1,21 @@
 import type { ApiResponse } from '../types';
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Normalize BASE_URL so that whether VITE_API_URL is 'https://domain.com', 'https://domain.com/api', or 'http://localhost:5000',
+// it cleanly targets the backend API root.
+const getApiBaseUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  if (!envUrl) {
+    return 'https://bio-tech-quiz-quest.onrender.com/api';
+  }
+  // Strip trailing slashes
+  const clean = envUrl.replace(/\/+$/, '');
+  if (clean.endsWith('/api')) {
+    return clean;
+  }
+  return `${clean}/api`;
+};
+
+const BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   code: string;
@@ -42,7 +57,14 @@ export async function request<T>(
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  let url: string;
+  if (endpoint.startsWith('http')) {
+    url = endpoint;
+  } else {
+    // Strip leading /api if passed
+    const cleanEndpoint = endpoint.replace(/^\/?api\/?/, '').replace(/^\//, '');
+    url = `${BASE_URL}/${cleanEndpoint}`;
+  }
 
   try {
     const response = await fetch(url, {

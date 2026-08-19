@@ -1,10 +1,12 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { useGame } from '../../context/GameContext';
 import { PixelPanel } from '../ui/PixelPanel';
 import { PixelButton } from '../ui/PixelButton';
-import { Play, Map, Award, Trophy, Settings, Home, X } from 'lucide-react';
+import { Play, Map, Award, Trophy, Settings, Home, X, GraduationCap } from 'lucide-react';
 
 export const PauseMenu: React.FC = () => {
+  const { user } = useAuth();
   const { isPaused, setIsPaused, setScreen } = useGame();
 
   if (!isPaused) return null;
@@ -44,6 +46,18 @@ export const PauseMenu: React.FC = () => {
             >
               RESUME RESEARCH
             </PixelButton>
+
+            {user?.role === 'ADMIN' && (
+              <PixelButton
+                variant="amber"
+                size="md"
+                onClick={() => handleNavigate('ADMIN')}
+                icon={<GraduationCap className="w-4 h-4 fill-current" />}
+                className="font-bold"
+              >
+                TEACHER CONSOLE (CMS)
+              </PixelButton>
+            )}
 
             <PixelButton
               variant="cyan"

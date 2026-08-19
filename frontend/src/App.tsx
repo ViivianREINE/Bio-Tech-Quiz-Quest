@@ -15,12 +15,17 @@ import { AchievementsHall } from './components/gamification/AchievementsHall';
 import { LeaderboardModal } from './components/gamification/LeaderboardModal';
 import { WorldMapModal } from './components/map/WorldMapModal';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { TeacherConsole } from './components/admin/TeacherConsole';
 
 const GameShell: React.FC = () => {
   const { screen } = useGame();
 
   if (screen === 'MENU') {
     return <MainMenu />;
+  }
+
+  if (screen === 'ADMIN') {
+    return <TeacherConsole />;
   }
 
   return (

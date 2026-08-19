@@ -4,7 +4,7 @@ import { useGame } from '../../context/GameContext';
 import { useAudio } from '../../context/AudioContext';
 import { PixelButton } from '../ui/PixelButton';
 import { AuthModal } from '../auth/AuthModal';
-import { Play, BookOpen, Trophy, Award, Settings, LogOut, Dna, Sparkles } from 'lucide-react';
+import { Play, BookOpen, Trophy, Award, Settings, LogOut, Dna, Sparkles, GraduationCap } from 'lucide-react';
 
 export const MainMenu: React.FC = () => {
   const { user, logout } = useAuth();
@@ -28,6 +28,14 @@ export const MainMenu: React.FC = () => {
     }
     playBGM();
     setScreen('LAB');
+  };
+
+  const handleOpenAdmin = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    setScreen('ADMIN');
   };
 
   return (
@@ -101,6 +109,19 @@ export const MainMenu: React.FC = () => {
           >
             {user ? 'ENTER CAMPUS' : 'LOGIN & PLAY'}
           </PixelButton>
+
+          {/* Teacher Console (Admin / Faculty button) */}
+          {user?.role === 'ADMIN' && (
+            <PixelButton
+              variant="amber"
+              size="md"
+              onClick={handleOpenAdmin}
+              icon={<GraduationCap className="w-4 h-4 fill-current" />}
+              className="w-full py-3 text-sm font-bold"
+            >
+              🎓 OPEN TEACHER CONSOLE (CMS)
+            </PixelButton>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <PixelButton

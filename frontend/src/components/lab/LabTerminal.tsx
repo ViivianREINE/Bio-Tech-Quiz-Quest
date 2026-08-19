@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { useAudio } from '../../context/AudioContext';
 import { quizApi } from '../../api';
-import type { Topic, QuizSummary } from '../../types';
+import type { Topic, QuizSummary, Unit } from '../../types';
 import { PixelPanel } from '../ui/PixelPanel';
 import { PixelButton } from '../ui/PixelButton';
-import { ArrowLeft, BookOpen, Play, Lock, Dna } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, Lock, Dna, AlertCircle, RefreshCw } from 'lucide-react';
 
 export const LabTerminal: React.FC = () => {
   const {
@@ -17,6 +17,7 @@ export const LabTerminal: React.FC = () => {
     setActiveQuiz,
     setActiveQuizStartData,
     loadTopicsForUnit,
+    loadSubjectAndUnits,
     topics,
   } = useGame();
   const { playSFX } = useAudio();
@@ -37,7 +38,8 @@ export const LabTerminal: React.FC = () => {
         await loadTopicsForUnit(activeUnit.id);
         const quizRes = await quizApi.getQuizzes({ unitId: activeUnit.id });
         const map: Record<string, QuizSummary[]> = {};
-        quizRes.quizzes.forEach((q) => {
+        const safeQuizzes = Array.isArray(quizRes?.quizzes) ? quizRes.quizzes : [];
+        safeQuizzes.forEach((q) => {
           if (!map[q.topicId]) map[q.topicId] = [];
           map[q.topicId].push(q);
         });
@@ -75,19 +77,22 @@ export const LabTerminal: React.FC = () => {
     }
   };
 
-  // Generate slots for Unit 1 + dynamic locked future slots
-  const allUnitSlots = [...units];
+  // Generate slots: real units first + dynamic locked future slots if fewer than 4
+  const realUnits = Array.isArray(units) ? units : [];
+  const allUnitSlots: Unit[] = [...realUnits];
+  
   if (allUnitSlots.length < 4) {
     const missing = 4 - allUnitSlots.length;
     for (let i = 0; i < missing; i++) {
+      const nextNum = allUnitSlots.length + 1;
       allUnitSlots.push({
-        id: `locked-unit-${allUnitSlots.length + 1}`,
+        id: `locked-unit-${nextNum}`,
         subjectId: activeUnit?.subjectId || '',
-        unitNumber: allUnitSlots.length + 1,
-        title: `Unit ${allUnitSlots.length + 1}: Advanced Biotech Sector`,
+        unitNumber: nextNum,
+        title: `Unit ${nextNum}: Advanced Biotech Sector`,
         description: 'Advanced genomics calibration in progress.',
         status: 'DRAFT',
-        displayOrder: allUnitSlots.length + 1,
+        displayOrder: nextNum,
       });
     }
   }
@@ -105,14 +110,27 @@ export const LabTerminal: React.FC = () => {
                   {activeUnit?.subject?.name || 'OMICS'} LABORATORY RESEARCH TERMINAL
                 </span>
               </div>
-              <PixelButton
-                variant="wood"
-                size="sm"
-                onClick={() => setScreen('OVERWORLD')}
-                icon={<ArrowLeft className="w-3.5 h-3.5" />}
-              >
-                RETURN TO CAMPUS
-              </PixelButton>
+              <div className="flex items-center gap-2">
+                <PixelButton
+                  variant="wood"
+                  size="sm"
+                  onClick={() => {
+                    loadSubjectAndUnits();
+                    if (activeUnit) loadTopicsForUnit(activeUnit.id);
+                  }}
+                  icon={<RefreshCw className="w-3.5 h-3.5" />}
+                >
+                  REFRESH
+                </PixelButton>
+                <PixelButton
+                  variant="wood"
+                  size="sm"
+                  onClick={() => setScreen('OVERWORLD')}
+                  icon={<ArrowLeft className="w-3.5 h-3.5" />}
+                >
+                  RETURN TO CAMPUS
+                </PixelButton>
+              </div>
             </div>
           }
         >
@@ -120,7 +138,8 @@ export const LabTerminal: React.FC = () => {
             {/* Unit Selection Tabs */}
             <div className="flex flex-wrap gap-2.5 border-b-2 border-amber-950 pb-3">
               {allUnitSlots.map((unit) => {
-                const isLocked = unit.status !== 'PUBLISHED' && unit.id.startsWith('locked');
+                const isPlaceholder = unit.id.startsWith('locked-unit-');
+                const isLocked = isPlaceholder || unit.status !== 'PUBLISHED';
                 const isActive = activeUnit?.id === unit.id;
 
                 return (
@@ -148,7 +167,7 @@ export const LabTerminal: React.FC = () => {
                       <span className="text-cyan-400">🔬</span>
                     )}
                     <span>UNIT {unit.unitNumber}</span>
-                    {isLocked && <span className="text-[9px] text-stone-500 font-sans">(COMING SOON)</span>}
+                    {isLocked && <span className="text-[9px] text-stone-500 font-sans">({unit.status || 'LOCKED'})</span>}
                   </button>
                 );
               })}
@@ -180,8 +199,9 @@ export const LabTerminal: React.FC = () => {
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="p-3 bg-red-950/90 border border-red-500 text-red-200 text-xs font-sans rounded">
-                ⚠️ {errorMsg}
+              <div className="p-3 bg-red-950/90 border border-red-500 text-red-200 text-xs font-sans rounded flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{errorMsg}</span>
               </div>
             )}
 
@@ -193,9 +213,16 @@ export const LabTerminal: React.FC = () => {
                   LOADING RESEARCH MODULES FROM SERVER...
                 </p>
               </div>
+            ) : topics.length === 0 ? (
+              <div className="py-12 text-center font-pixel text-xs text-stone-400 flex flex-col items-center gap-2">
+                <span>NO PUBLISHED TOPICS REGISTERED IN THIS UNIT.</span>
+                <span className="text-[10px] text-amber-300/70 font-sans">
+                  Teachers can create and publish topics using the Teacher Console.
+                </span>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {topics.map((topic) => {
+                {topics.map((topic, index) => {
                   const quizzes = topicQuizzes[topic.id] || [];
                   const primaryQuiz = quizzes[0];
 
@@ -207,7 +234,7 @@ export const LabTerminal: React.FC = () => {
                       <div>
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-pixel text-[10px] text-cyan-400">
-                            TOPIC {topic.topicNumber}
+                            TOPIC {topic.topicNumber || index + 1}
                           </span>
                           {primaryQuiz && (
                             <span className="text-[10px] font-pixel text-amber-400 bg-[#160c07] px-2 py-0.5 border border-amber-900">
@@ -237,7 +264,7 @@ export const LabTerminal: React.FC = () => {
                           READ NOTES
                         </PixelButton>
 
-                        {primaryQuiz && (
+                        {primaryQuiz ? (
                           <PixelButton
                             variant="amber"
                             size="sm"
@@ -248,6 +275,10 @@ export const LabTerminal: React.FC = () => {
                           >
                             {startingQuizId === primaryQuiz.id ? 'LAUNCHING...' : 'QUIZ'}
                           </PixelButton>
+                        ) : (
+                          <span className="text-[10px] font-pixel text-stone-500 py-1.5 px-2 bg-black/30 border border-stone-800 text-center flex-1">
+                            NO QUIZ YET
+                          </span>
                         )}
                       </div>
                     </div>

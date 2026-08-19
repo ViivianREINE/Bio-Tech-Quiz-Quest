@@ -34,8 +34,10 @@ export const TopicReader: React.FC = () => {
           academicApi.getContentByTopic(activeTopic.id),
           quizApi.getQuizzes({ topicId: activeTopic.id }),
         ]);
-        setContents(contentList);
-        setQuizzes(quizRes.quizzes);
+        const safeContents = Array.isArray(contentList) ? contentList : [];
+        const safeQuizzes = Array.isArray(quizRes?.quizzes) ? quizRes.quizzes : [];
+        setContents(safeContents);
+        setQuizzes(safeQuizzes);
         setCurrentIndex(0);
       } catch (err: any) {
         setErrorMsg(err.message || 'Unable to retrieve research content.');
@@ -79,7 +81,7 @@ export const TopicReader: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Dna className="w-5 h-5 text-cyan-400" />
                 <span className="font-pixel text-xs text-amber-300">
-                  TOPIC {activeTopic?.topicNumber}: {activeTopic?.title}
+                  TOPIC {activeTopic?.topicNumber || ''}: {activeTopic?.title || 'RESEARCH DOSSIER'}
                 </span>
               </div>
               <PixelButton
@@ -110,6 +112,17 @@ export const TopicReader: React.FC = () => {
               <p className="font-pixel text-xs text-stone-400">
                 NO LEARNING CONTENT REGISTERED FOR THIS TOPIC YET.
               </p>
+              {primaryQuiz && (
+                <PixelButton
+                  variant="amber"
+                  size="md"
+                  onClick={handleLaunchQuiz}
+                  icon={<Play className="w-4 h-4 fill-current" />}
+                  className="mt-3"
+                >
+                  START TOPIC QUIZ DIRECTLY
+                </PixelButton>
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-6">
@@ -145,9 +158,16 @@ export const TopicReader: React.FC = () => {
               {/* In-Game Terminal Parchment Document */}
               <div className="pixel-box-parchment p-5 md:p-7 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
                 <div className="border-b-2 border-amber-900/30 pb-3">
-                  <span className="font-silk text-xs text-amber-800 uppercase tracking-widest">
-                    Academic Research Summary
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-silk text-xs text-amber-800 uppercase tracking-widest">
+                      Academic Research Summary {currentContent.contentType ? `• ${currentContent.contentType}` : ''}
+                    </span>
+                    {currentContent.difficulty && (
+                      <span className="px-2 py-0.5 bg-amber-900/20 border border-amber-800/40 text-[#4a2e1a] font-pixel text-[9px]">
+                        {currentContent.difficulty}
+                      </span>
+                    )}
+                  </div>
                   <h3 className="font-pixel text-base md:text-lg text-[#2e180d] mt-1">
                     {currentContent.title}
                   </h3>
@@ -162,7 +182,7 @@ export const TopicReader: React.FC = () => {
 
                 {/* Main Content Body */}
                 <div className="text-xs md:text-sm text-[#382416] font-sans leading-relaxed whitespace-pre-line">
-                  {currentContent.content}
+                  {currentContent.content || currentContent.body}
                 </div>
 
                 {/* Key Points / Highlights */}
